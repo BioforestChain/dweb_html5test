@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>HTML5test - How well does your browser support HTML5?</title>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=EDGE">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="./css/main.css" type="text/css">
+		<script src='./scripts/base.js' type='text/javascript'></script>
+		<script src='./scripts/9/engine.js' type='text/javascript'></script>
+		<script src='./scripts/9/data.js' type='text/javascript'></script>
+		<meta name="application-name" content="HTML5test"/>
+		<link rel="icon" type="image/png" href="./images/icons/favicon-32x32.png">
+		<meta name="msapplication-TileColor" content="#0092bf">
+		<meta name="msapplication-TileImage" content="/images/icons/mstile-144x144.png">
+		<meta property="og:title" content="The HTML5 test - How well does your browser support HTML5?">
+		<meta property="og:description" content="The HTML5 test score is an indication of how well your browser supports the upcoming HTML5 standard and related specifications. How well does your browser support HTML5?">
+		<meta property="og:type" content="website">
+		<meta property="og:url" content="https://html5test.co/">
+		<meta property="og:image" content="https://html5test.co/images/thumbnail.jpg">
+		<meta property="og:site_name" content="HTML5test.co">
+	</head>
+<!--
+	Copyright © 2010-2024 Niels Leenheer, Jerzy Głowacki
+
+	Permission is hereby granted, free of charge, to any person obtaining
+	a copy of this software and associated documentation files (the
+	"Software"), to deal in the Software without restriction, including
+	without limitation the rights to use, copy, modify, merge, publish,
+	distribute, sublicense, and/or sell copies of the Software, and to
+	permit persons to whom the Software is furnished to do so, subject to
+	the following conditions:
+
+	The above copyright notice and this permission notice shall be
+	included in all copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+	EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+	NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+	LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+	OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+-->
+	<body>
+		<div id='contentwrapper'>
+			<div class='page'>
+				<div id='loading'><div></div></div>
+
+				<div id='warning'></div>
+
+				<div id='contents' class='column' style='visibility: hidden;'>
+					<div id='score'></div>
+					<div id='results'></div>
+					<div class='paper'>
+						<div>
+							<h2>About HTML5test</h2>
+
+							<div class='text'>
+								<span id='html5'></span>
+
+								<p>
+									The HTML5 test score is an indication of how well your browser supports the
+									HTML5 standard and related specifications. Find out which parts of HTML5 are
+									supported by your browser today and compare the results with other browsers.
+								</p>
+
+								<p>
+									The HTML5 test does not try to test all of the new features offered by HTML5, nor does it try to test the functionality of each feature it does detect.
+									Despite these shortcomings we hope that by quantifying the level of support users and web developers will get an idea of how hard the
+									browser manufacturers work on improving their browsers and the web as a development platform.
+								</p>
+
+								<p>
+									The score is calculated by testing for the many new features of HTML5. Each feature is worth one or more points. Apart from the main HTML5
+									specification and other specifications created the W3C HTML Working Group or WHATWG, this test also awards points for supporting related drafts and
+									specifications.
+								</p>
+								<p>
+									Please be aware that although the HTML5 specification is now an official recommendation, other specifications that are being tested are still in development
+									and could change before receiving an official status.
+									In the future new tests will be added for new specifications and existing tests will be updated when the specifications change.
+								</p>
+
+								<h3>Help us improve HTML5 test by donating</h3>
+								<p>
+									This will allow us to spend more time on HTML5test.com and acquire more devices for our testing lab.
+
+								</p>
+							</div>
+						</div>
+
+						<div class='buttons'>
+							<abbr class='button developed' title="Github"><span>https://github.com/niutech/html5test</span></abbr>
+						</div>
+					</div>
+
+					<div class='footer'>
+						<div>
+							<div class='copyright'>
+								<p>
+									&copy; 2024 - Created by Niels Leenheer, modified by Jerzy Głowacki.<br>
+									Please note that the HTML5 test is not affiliated with the W3C or the HTML5 working group.<br>
+									HTML5 Logo by <abbr title="World Wide Web Consortium">W3C</abbr>.
+									Browser detection by <abbr title='http://whichbrowser.net'>WhichBrowser</abbr>.
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id='index'></div>
+
+		<script>
+			var scoreMsg
+			var scorePort
+			window.addEventListener("message", (event) => {
+				console.log("okk", event)
+				if(event.data === "score-channel"){
+					scorePort = event.ports[0];
+					if (scoreMsg) {
+						scorePort.postMessage(scoreMsg)
+					}
+				}
+			});
+
+			loadWhichBrowser(function(WhichBrowser) {
+				Browsers = new WhichBrowser({
+					useFeatures:		true,
+					detectCamouflage:	true
+				});
+
+				new Test(function(r) {
+					var m = new Metadata(tests);
+					var c = new Calculate(r, m.data);
+					showResults(r, c, m);
+				}, showError);
+			});
+
+
+			function showResults(r, c, m) {
+				/* Update total score */
+				var container = document.getElementById('score');
+				scoreMsg = `${c.score}/${c.maximum}`
+				if (scorePort) {
+					scorePort.postMessage(scoreMsg)
+				}
+
+				container.innerHTML = 
+					"<div class='pointsPanel'>" +
+					"<h2><span>Your browser scores</span> <strong>" + c.score + "</strong> <span>out of " + c.maximum + " points</span></h2>" +
+					"</div>";
+
+				/* Show box for confirming useragent detection */
+				new Confirm(container, {
+					id:			r.uniqueid,
+					onConfirm:	function() { submit('confirm', '{"uniqueid": "' + r.uniqueid + '"}'); },
+					onReport:	function() { submit('report', '{"uniqueid": "' + r.uniqueid + '"}'); },
+					onFeedback:	function(value) { submit('feedback', JSON.stringify({ uniqueid: r.uniqueid, value: value })); }
+				});
+
+				/* Show detailed report of scores */
+				var container = document.getElementById('results');
+				container.innerHTML = '';
+				var div = document.createElement('div');
+				div.className = 'resultsTable detailsTable';
+				container.appendChild(div);
+
+				var table = new ResultsTable({
+					parent:			div,
+					tests:			m.data,
+					header:			false,
+					links:			true,
+					explainations: 	true,
+					grading:		true,
+					bonus:			true,
+					distribute:		true,
+					columns:		1
+				});
+
+				table.updateColumn(0, { points: c.points, maximum: c.maximum, score: c.score, results: r.results });
+
+				new Index({
+					tests:			tests,
+					index:			document.getElementById('index'),
+					wrapper:		document.getElementById('contentwrapper')
+				});
+
+				window.setTimeout(function() {
+					var contents = document.getElementById('contents');
+					contents.style.visibility = 'visible';
+
+					var loading = document.getElementById('loading');
+					loading.style.display = 'none';
+				}, 100);
+			}
+
+
+			function showError(e) {
+				if (typeof console != 'undefined') console.log(e);
+
+					alert('Test has failed: ' + e.message);
+
+					var contents = document.getElementById('contents');
+					contents.style.visibility = 'visible';
+
+					var loading = document.getElementById('loading');
+					loading.style.display = 'none';
+			}
+		</script>
+	</body>
+</html>
